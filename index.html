@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Think Different Learner - V8 Pro</title>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Firebase SDK Vorbereitung (Platzhalter) -->
+    <!-- <script type="module" src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script> -->
+    <!-- <script type="module" src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script> -->
+    <!-- <script type="module" src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script> -->
+</head>
+
+<body>
+
+
+
+    <!-- LOGIN VIEW -->
+    <section id="view-login" style="display: none; height: 100vh; width: 100vw; position: fixed; top: 0; left: 0; z-index: 10000; align-items: center; justify-content: center; background: var(--bg-dark); overflow: hidden;">
+        <!-- Ambient Background Glows für Login -->
+        <div class="ambient-glow" style="background: var(--sys-blue); top: -20%; left: -10%;"></div>
+        <div class="ambient-glow" style="background: var(--sys-purple); bottom: -20%; right: -10%;"></div>
+        
+        <div class="card apple-liquid-glass" style="width: 90%; max-width: 400px; padding: 40px 30px; text-align: center; position: relative; z-index: 2;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-color)" stroke-width="2" style="width:60px; height:60px; margin-bottom: 20px;">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+            </svg>
+            
+            <div id="login-form-container">
+                <h2 style="margin-bottom: 10px; font-weight: 700;">Willkommen zurück</h2>
+                <p style="color: var(--text-sub); margin-bottom: 30px; font-size: 14px;">Melde dich an, um deinen Fortschritt zu synchronisieren.</p>
+                
+                <input type="email" id="login-email" class="apple-input" placeholder="E-Mail Adresse" style="width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.1); color: var(--text-main); font-size: 16px;">
+                <input type="password" id="login-pass" class="apple-input" placeholder="Passwort" style="width: 100%; padding: 15px; margin-bottom: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.1); color: var(--text-main); font-size: 16px;">
+                
+                <button class="primary" style="width: 100%; padding: 15px; font-size: 16px;" onclick="handleLogin()">Anmelden</button>
+                
+                <div style="margin-top: 20px; font-size: 13px; color: var(--text-sub); cursor: pointer;" onclick="toggleAuthMode('register')">
+                    Noch kein Konto? <span style="color: var(--sys-blue);">Jetzt registrieren</span>
+                </div>
+            </div>
+
+            <div id="register-form-container" style="display: none;">
+                <h2 style="margin-bottom: 10px; font-weight: 700;">Konto erstellen</h2>
+                <p style="color: var(--text-sub); margin-bottom: 30px; font-size: 14px;">Erstelle ein lokales Profil, um deinen Fortschritt zu speichern.</p>
+                
+                <input type="text" id="reg-name" class="apple-input" placeholder="Dein Name oder Nickname" style="width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.1); color: var(--text-main); font-size: 16px;">
+                <input type="email" id="reg-email" class="apple-input" placeholder="E-Mail Adresse" style="width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.1); color: var(--text-main); font-size: 16px;">
+                <input type="password" id="reg-pass" class="apple-input" placeholder="Passwort" style="width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.1); color: var(--text-main); font-size: 16px;">
+                <input type="password" id="reg-pass-confirm" class="apple-input" placeholder="Passwort bestätigen" style="width: 100%; padding: 15px; margin-bottom: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.1); color: var(--text-main); font-size: 16px;">
+                
+                <button class="primary" style="width: 100%; padding: 15px; font-size: 16px;" onclick="handleRegister()">Registrieren</button>
+                
+                <div style="margin-top: 20px; font-size: 13px; color: var(--text-sub); cursor: pointer;" onclick="toggleAuthMode('login')">
+                    Bereits ein Konto? <span style="color: var(--sys-blue);">Hier anmelden</span>
+                </div>
+            </div>
+        </div>
+    </section>
+<div id="app-layout" style="display: none;">
+
+    <!-- DESKTOP / TABLET SIDEBAR (macOS Notes Style) -->
+    <aside id="sidebar" class="apple-liquid-glass">
+        <div class="sidebar-content">
+            <header style="cursor: pointer;" onclick="resetApp()" title="Zurück zum Dashboard">
+                <div class="olli-logo"><svg viewBox="0 0 24 24"><path d="M12 2L2 12H5V20H10V14H14V20H19V12H22L12 2Z"/></svg></div>
+                <h2>Fächer</h2>
+            </header>
+            <div id="desktop-accordion">
+                <!-- Dynamically populated by core.js -->
+            </div>
+        </div>
+        <!-- EINSTELLUNGEN DESKTOP -->
+        <div class="sidebar-bottom">
+            <button class="settings-btn" onclick="navTo('settings')">
+                <svg viewBox="0 0 24 24"><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/></svg>
+                Einstellungen
+            </button>
+        </div>
+    </aside>
+
+    <main id="main-content">
+        <header style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div class="olli-logo" style="display:none; cursor: pointer;" id="mobile-logo" onclick="resetApp()" title="Zurück zum Dashboard"><svg viewBox="0 0 24 24"><path d="M12 2L2 12H5V20H10V14H14V20H19V12H22L12 2Z"/></svg></div>
+                <h1 id="page-title">Dashboard</h1>
+            </div>
+            
+            <button id="btn-pomodoro" class="apple-liquid-glass" style="display: flex; align-items: center; gap: 8px; font-weight: bold; border-radius: 12px;" onclick="togglePomodoro()">
+                🍅 <span id="pomodoro-time">25:00</span>
+            </button>
+        </header>
+
+        <!-- DASHBOARD -->
+        <section id="view-dashboard" class="view-section active-view">
+            <div class="card apple-liquid-glass" style="text-align: center;">
+                <h3>Bildungsscore</h3>
+                
+                <div style="text-align: left; font-size: 13px; line-height: 1.6; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 16px;">
+                    <strong style="display:block; margin-bottom: 5px;">Score Legende:</strong>
+                    <div><span style="color: var(--sys-green);">●</span> <strong>Exzellent</strong> – Sicher im Stoff</div>
+                    <div><span style="color: var(--sys-blue);">●</span> <strong>Gut</strong> – Grundlagen gefestigt</div>
+                    <div><span style="color: var(--sys-red);">●</span> <strong>Nachholbedarf</strong> – Fokus-Thema</div>
+                </div>
+
+                <div class="rings-container">
+                    <svg viewBox="0 0 180 180">
+                        <circle class="ring-bg" cx="90" cy="90" r="80"/><circle class="ring-fg" id="ring-wissen" cx="90" cy="90" r="80"/>
+                        <circle class="ring-bg" cx="90" cy="90" r="65"/><circle class="ring-fg" id="ring-exam" cx="90" cy="90" r="65"/>
+                        <circle class="ring-bg" cx="90" cy="90" r="50"/><circle class="ring-fg" id="ring-hunt" cx="90" cy="90" r="50"/>
+                    </svg>
+                    <div class="score-center">
+                        <span>Score</span>
+                        <span id="val-score">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EXAM PLANNER WIDGET -->
+            <div class="card apple-liquid-glass">
+                <h3 style="margin-bottom: 15px;">🗓️ Exam Planner</h3>
+                <p style="color: var(--text-sub); font-size: 14px; margin-bottom: 15px;">Generiere einen Trainingsplan für deine nächste Prüfung.</p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <select id="exam-subj" style="flex: 1; min-width: 150px; padding: 12px; border-radius: 12px; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.1); outline: none;">
+                        <option value="math">Mathematik</option>
+                        <option value="deu">Deutsch</option>
+                        <option value="eng">Englisch</option>
+                        <option value="phys">Physik</option>
+                        <option value="chem">Chemie</option>
+                        <option value="bio">Biologie</option>
+                        <option value="geo">Geografie</option>
+                        <option value="his">Geschichte</option>
+                        <option value="gk">Gemeinschaftskunde</option>
+                        <option value="kunst">Musik & Kunst</option>
+                    </select>
+                    <input type="date" id="exam-date" style="flex: 1; min-width: 150px; padding: 12px; border-radius: 12px; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.1); outline: none;">
+                    <button class="primary" style="flex: 1; min-width: 150px;" onclick="generateExamPlan()">Plan erstellen</button>
+                </div>
+                <div id="exam-plan-output" style="margin-top: 20px; display: none; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; border-left: 4px solid var(--sys-blue);">
+                    <!-- Plan will be generated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- THEORY (SLIDESHOW) -->
+        <section id="view-theory" class="view-section">
+            <div class="card apple-liquid-glass" style="position: relative; min-height: 400px; display: flex; flex-direction: column;">
+                <button class="secondary" style="position:absolute; top: 15px; right: 15px; padding: 5px 12px; font-size:12px; border-radius: 8px;" onclick="resetApp()">X</button>
+                <h2 id="theory-title" style="margin-bottom:15px; color:var(--text-main);"></h2>
+                <div id="slide-progress" style="font-size: 14px; color: var(--text-sub); margin-bottom: 20px;">Slide 1 von X</div>
+                
+                <div id="theory-slides-container" style="flex: 1; margin-bottom: 20px;">
+                    <!-- Slide content injected here by core.js -->
+                </div>
+                
+                <div style="display:flex; gap:10px; margin-top: auto;">
+                    <button id="btn-slide-prev" class="secondary" style="flex:1;" onclick="prevSlide()">Zurück</button>
+                    <button id="btn-slide-next" class="primary" style="flex:1;" onclick="nextSlide()">Weiter</button>
+                    <button id="btn-slide-finish" class="primary" style="flex:1; display:none;" onclick="startExercise()">Zur Übung</button>
+                </div>
+            </div>
+        </section>
+
+        <button id="btn-print-flashcards" class="primary" style="width:100%; margin-top:15px; display:none;" onclick="printFlashcards()">🖨️ Als Lernkartei ausdrucken</button>
+        <!-- EXERCISE -->
+        <section id="view-exercise" class="view-section">
+            <div class="card apple-liquid-glass">
+                <button class="secondary" style="position:absolute; top: 15px; right: 15px; padding: 5px 12px; font-size:12px; border-radius: 8px;" onclick="resetApp()">X</button>
+                <h2 id="ex-title" style="margin-bottom:20px;"></h2>
+                <div id="ex-question" style="font-size:18px; margin-bottom:20px;"></div>
+                <input type="text" id="ex-input" placeholder="Lösung eingeben...">
+                <button class="primary" style="width:100%;" onclick="checkAnswer()">Prüfen</button>
+                <div id="ex-feedback" style="margin-top:20px; font-weight:bold;"></div>
+                <div id="ex-steps" style="display:none; background:rgba(0,0,0,0.3); padding:15px; border-radius:16px; margin-top:15px; border-left:4px solid var(--sys-orange);"></div>
+                <button id="ex-next" style="display:none; width:100%; margin-top:15px;" onclick="nextExercise()">Nächste Aufgabe</button>
+            </div>
+        </section>
+        
+        <!-- SETTINGS -->
+        <section id="view-settings" class="view-section">
+            <div class="card apple-liquid-glass">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">Einstellungen</h2>
+                    <button class="secondary" style="border-radius: 50%; width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,59,48,0.1); border-color: rgba(255,59,48,0.3); color: var(--sys-red);" onclick="closeMenu()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px; height:20px;">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="settings-row">
+                    <div>
+                        <div style="font-weight: 600;">Theme-Engine</div>
+                        <div style="font-size: 13px; color: var(--text-sub);">Light / Dark / OLED</div>
+                    </div>
+                    <select id="select-theme" style="width:120px; border-radius: 12px; padding: 5px; background: rgba(255,255,255,0.1); color: var(--text-main); border: 1px solid rgba(255,255,255,0.2);" onchange="applySettings()">
+                        <option value="dark">Glass Dark</option>
+                        <option value="light">True Light</option>
+                        <option value="oled">True OLED</option>
+                    </select>
+                </div>
+                
+                <div class="settings-row">
+                    <div>
+                        <div style="font-weight: 600;">Glass Blur</div>
+                        <div style="font-size: 13px; color: var(--text-sub);">Transparenz-Effekt</div>
+                    </div>
+                    <input type="range" id="slider-blur" min="0" max="60" value="40" style="width:100px; margin:0;" oninput="applySettings()">
+                </div>
+                
+                <div class="settings-row">
+                    <div>
+                        <div style="font-weight: 600;">Accent Color</div>
+                        <div style="font-size: 13px; color: var(--text-sub);">Globale Hauptfarbe</div>
+                    </div>
+                    <input type="color" id="picker-color" value="#0A84FF" style="border: none; border-radius: 8px; width: 40px; height: 30px; padding: 0; background: none; cursor: pointer;" oninput="applySettings()">
+                </div>
+                
+                <div class="settings-row">
+                    <div>
+                        <div style="font-weight: 600;">LRS-Modus (Inklusion)</div>
+                        <div style="font-size: 13px; color: var(--text-sub);">Spezialschrift, Lesehilfe & Schreibtraining in der Sidebar</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-lrs" onchange="applySettings()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <div class="settings-row">
+                    <div>
+                        <div style="font-weight: 600;">Zen-Modus</div>
+                        <div style="font-size: 13px; color: var(--text-sub);">Blendet Punkte und Timer aus</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-zen" onchange="applySettings()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <div class="settings-row">
+                    <div>
+                        <div style="font-weight: 600;">Ambient Glow Intensität</div>
+                        <div style="font-size: 13px; color: var(--text-sub);">Steuert den Farb-Hintergrund in Fächern</div>
+                    </div>
+                    <input type="range" id="slider-glow" min="0" max="100" value="15" style="width:100px; margin:0;" oninput="applySettings()">
+                </div>
+                
+                <div class="settings-row">
+                    <div>
+                        <div style="font-weight: 600;">Pomodoro: Fokus</div>
+                        <div style="font-size: 13px; color: var(--text-sub);">Dauer in Minuten</div>
+                    </div>
+                    <input type="number" id="input-pomo-focus" value="25" min="5" max="60" style="width:60px; padding: 5px; margin: 0; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);" onchange="applySettings()">
+                </div>
+                
+                <div class="settings-row">
+                    <div>
+                        <div style="font-weight: 600;">Pomodoro: Pause</div>
+                        <div style="font-size: 13px; color: var(--text-sub);">Dauer in Minuten</div>
+                    </div>
+                    <input type="number" id="input-pomo-break" value="5" min="1" max="30" style="width:60px; padding: 5px; margin: 0; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);" onchange="applySettings()">
+                </div>
+                
+                <div class="settings-row">
+                    <div>
+                        <div style="font-weight: 600;">Schriftgröße (Zoom)</div>
+                        <div style="font-size: 13px; color: var(--text-sub);">Globale Textskalierung</div>
+                    </div>
+                    <input type="range" id="slider-zoom" min="80" max="200" value="100" style="width:100px; margin:0;" oninput="applySettings()">
+                </div>
+                
+                <div class="settings-row" style="margin-top: 30px; justify-content: center;">
+                    <button class="secondary" style="width: 100%; color: var(--sys-red); border-color: rgba(255,59,48,0.3);" onclick="handleLogout()">Abmelden</button>
+                </div>
+                
+            </div>
+        </section>
+    </main>
+
+    <!-- MOBILE BOTTOM TAB BAR -->
+    <nav id="bottom-tab-bar" class="apple-liquid-glass">
+        <button class="tab-btn active" onclick="resetApp();">
+            <svg viewBox="0 0 24 24"><path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"/></svg>Home
+        </button>
+        <button class="tab-btn" onclick="openMobileSheet();">
+            <svg viewBox="0 0 24 24"><path d="M4,6H20V16H4V6M4,4C2.9,4 2,4.9 2,6V16C2,17.1 2.9,18 4,18H20C21.1,18 22,17.1 22,16V6C22,4.9 21.1,4 20,4H4M4,20H20V22H4V20Z"/></svg>Fächer
+        </button>
+        <button class="tab-btn" onclick="toggleLernhilfe();">
+            <svg viewBox="0 0 24 24"><path d="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z"/></svg>Lernhilfe
+        </button>
+
+        <button class="tab-btn" onclick="navTo('settings');">
+            <svg viewBox="0 0 24 24"><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/></svg>Settings
+        </button>
+    </nav>
+
+    <!-- MOBILE FULL-SCREEN SUBJECT SHEET -->
+    <div id="mobile-subject-sheet" class="apple-liquid-glass">
+        <div class="sheet-header">
+            <h2>Fächer</h2>
+            <button class="primary" onclick="closeMobileSheet()">X</button>
+        </div>
+        <div class="sheet-content" id="mobile-accordion">
+             <!-- Dynamically populated by core.js -->
+        </div>
+    </div>
+</div>
+
+<script src="core.js"></script>
+<script src="modules/lrs_data.js"></script>
+<script src="modules/math.js"></script>
+<script src="modules/deu.js"></script>
+<script src="modules/eng.js"></script>
+<script src="modules/phys.js"></script>
+<script src="modules/chem.js"></script>
+<script src="modules/bio.js"></script>
+<script src="modules/geo.js"></script>
+<script src="modules/his.js"></script>
+<script src="modules/gk.js"></script>
+<script src="modules/kunst.js"></script>
+    <!-- PRINT AREA -->
+    
+    <!-- LERNHILFE MODAL -->
+    <div id="lernhilfe-modal" class="apple-liquid-glass" style="display:none;">
+        <div id="lernhilfe-header">
+            <h3 style="margin:0; font-size: 16px;">📚 Lernhilfe (Duden & Tafelwerk)</h3>
+            <button class="secondary" style="padding: 4px 10px; font-size: 12px;" onclick="toggleLernhilfe()">X</button>
+        </div>
+        <div id="lernhilfe-content">
+            <h4>Tafelwerk (Formeln)</h4>
+            <p><strong>Mathe:</strong> A = a × b (Rechteck), U = 2a + 2b<br>
+            c² = a² + b² (Satz des Pythagoras)<br>
+            <strong>Physik:</strong> v = s / t (Geschwindigkeit), F = m × a</p>
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 10px 0;">
+            <h4>Duden (Basis-Regeln)</h4>
+            <p><strong>Großschreibung:</strong> Nomen und Satzanfänge werden großgeschrieben.<br>
+            <strong>Das/Dass:</strong> "Das" als Artikel/Pronomen. "Dass" als Bindewort (Konjunktion).</p>
+        </div>
+    </div>
+
+    <div id="print-area"></div>
+</body>
+</html>
